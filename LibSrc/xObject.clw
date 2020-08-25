@@ -16,6 +16,7 @@
 xObject.Construct    PROCEDURE!, PROTECTED
   CODE
   SELF.xChilderen &= NEW xObjects
+  SELF.Attributes &= NEW xAttributes
   SELF.xPrevious  &= NULL
   SELF.xParent    &= NULL
   SELF.xOpen      &= NULL
@@ -30,6 +31,13 @@ I                       LONG
     DISPOSE(SELF.xChilderen.Obj)
   END
   DISPOSE(SELF.xChilderen)
+  IF NOT SELF.Tag &= NULL THEN 
+    DISPOSE(SELF.Tag) 
+  END
+  DISPOSE(SELF.Attributes)
+  IF NOT SELF.Contents &= NULL THEN 
+    DISPOSE(SELF.Contents) 
+  END
 
   
 ! Relationships
@@ -58,8 +66,8 @@ xObject.AddChild    PROCEDURE(*xObject pxObj)!, VIRTUAL
   
 
 ! Properties
-
   
+
 xObject.FromString  PROCEDURE(STRING pxStr)!, STRING, VIRTUAL
 PosBegin              LONG
 PosEnd                LONG
@@ -69,7 +77,7 @@ PosAttr               LONG
   IF SELF.Level > xObjectMaxLevels THEN RETURN END ! Limit recursion depth
   IF LEN(pxStr) = 0 THEN RETURN END ! No Data ?
   !Parse data
-!  SELF.DebugOutput('FromString Begin' & CHOOSE(LEN(pxStr) < 512, pxStr, SUB(pxStr, 1, 512) & '...'))
+  !SELF.DebugOutput('FromString Begin: ' & CHOOSE(LEN(pxStr) < 512, pxStr, SUB(pxStr, 1, 512) & '...'))
   ! Find Next Tag
   PosBegin = INSTRING('<', pxStr, 1, 1)
   IF PosBegin = 0 THEN RETURN END ! No more tags ?
@@ -80,19 +88,18 @@ PosAttr               LONG
   PosEnd   = INSTRING('>', pxStr, 1, PosBegin + 1)
   ! Find Attributes and Slice Attributes
   PosAttr  = INSTRING(' ', pxStr, 1, PosBegin + 1)
-!  SELF.DebugOutput('FromString PosBegin=' & PosBegin & ', PosEnd=' & PosEnd & ', PosAttr=' & PosAttr & '.')
+  !SELF.DebugOutput('FromString PosBegin=' & PosBegin & ', PosEnd=' & PosEnd & ', PosAttr=' & PosAttr & '.')
   IF PosAttr = 0 OR PosAttr > PosEnd THEN PosAttr = PosEnd END ! No extra data in tag?
   IF PosAttr < PosEnd THEN
-    SELF.Attributes &= NEW CSTRING(PosEnd - PosAttr)
-    SELF.Attributes = SUB(pxStr, PosAttr + 1, PosEnd - PosAttr - 1)
-    IF SUB(SELF.Attributes, -1, 1) = '/' THEN
+    IF SUB(pxStr, PosEnd -1, 1) = '/' THEN
       SELF._Closed = True
-      SELF.Attributes[LEN(SELF.Attributes)] = '<0>'
+      SELF.SetAttributes(SUB(pxStr, PosAttr + 1, PosEnd - PosAttr - 1 - 1))
+    ELSE
+      SELF.SetAttributes(SUB(pxStr, PosAttr + 1, PosEnd - PosAttr - 1))
     END
   END
   ! Slice Tag
-  SELF.Tag &= NEW CSTRING(PosAttr - PosBegin)
-  SELF.Tag  = SUB(pxStr, PosBegin + 1, PosAttr - PosBegin - 1)
+  SELF.SetTag(SUB(pxStr, PosBegin + 1, PosAttr - PosBegin - 1))
 
   ! Find Contents
   IF SELF.IsNoNesting() THEN ! Must find end tag, no nesting allowed
@@ -105,9 +112,7 @@ PosAttr               LONG
   END
   IF PosBegin > posEnd + 1 THEN
 !    SELF.DebugOutput('FromString Contents ' & PosBegin - PosEnd & '.')
-    SELF.Contents &= NEW CSTRING(PosBegin - PosEnd)
-    SELF.Contents = SUB(pxStr, PosEnd + 1, posBegin - PosEnd - 1)
-    SELF.Contents = SELF.RemoveBlanks(SUB(pxStr, PosEnd + 1, posBegin - PosEnd - 1))
+    SELF.SetContents(SUB(pxStr, PosEnd + 1, posBegin - PosEnd - 1))
     PosEnd = PosBegin - 1
   END
 
@@ -144,18 +149,131 @@ PosAttr               LONG
     CHOOSE(SELF.LengthTag() > 0, ', Tag=''' & SELF.Tag & '''', '') & | 
     CHOOSE(NOT SELF.xParent &= NULL, ', Parent=''' & SELF.xParent.Tag & '''', '') & | 
     CHOOSE(NOT SELF.xPrevious &= NULL, ', Previous=''' & SELF.xPrevious.Tag & '''', '') & | 
-    CHOOSE(SELF.LengthAttributes() > 0, ', Attributes=''' & SELF.Attributes & '''', '') & | 
+    CHOOSE(SELF.LengthAttributes() > 0, ', Attributes=''' & SELF.ToStringAttributes() & '''', '') & | 
     CHOOSE(SELF.LengthContents() > 200, ' , Contents=''' & SUB(SELF.Contents, 1, 100) & '....' & SUB(SELF.Contents, -100, 100) & '''', CHOOSE(SELF.LengthContents() > 0, ' , Contents=''' & SELF.Contents & '''', '')) & '.')
 
-!  SELF.DebugOutput('FromString Next:' & CHOOSE(LEN(pxStr) - PosEnd < 512, SUB(pxStr, PosEnd + 1, LEN(pxStr) - PosEnd), SUB(pxStr, PosEnd + 1, 512) & '...'))
+  !SELF.DebugOutput('FromString Next:' & CHOOSE(LEN(pxStr) - PosEnd < 512, SUB(pxStr, PosEnd + 1, LEN(pxStr) - PosEnd), SUB(pxStr, PosEnd + 1, 512) & '...'))
   SELF.xNext.FromString(SUB(pxStr, PosEnd + 1, LEN(pxStr) - PosEnd))
   
-    
-xObject.ToStringChildren    PROCEDURE()!, STRING, VIRTUAL
-I                             LONG
-X                             &gcCString
+  
+! Setters
+  
+  
+xObject.SetLevel    PROCEDURE(LONG pLevel)!, VIRTUAL
   CODE
-  X &= X._New(1024 * 1024)
+  SELF.Level = pLevel
+  
+  
+xObject.SetTag      PROCEDURE(STRING pTag)!, VIRTUAL
+  CODE
+  IF NOT SELF.Tag &= NULL THEN 
+    DISPOSE(SELF.Tag) 
+  END
+  SELF.Tag &= NEW CSTRING(LEN(pTag) + 1)
+  SELF.Tag = pTag & '<0>'
+
+  
+xObject.SetAttributes   PROCEDURE(STRING pAttributes)!, VIRTUAL
+PosBegin              LONG
+PosEnd                LONG
+
+  CODE
+  !SELF.Attributes &= NEW CSTRING(LEN(pAttributes) + 1)
+  !SELF.Attributes = pAttributes & '<0>'
+  ! Find Label
+  !SELF.DebugOutput('SetAttributes Begin: ' & CHOOSE(LEN(pAttributes) < 512, pAttributes, SUB(pAttributes, 1, 512) & '...'))
+  PosBegin = 1
+  LOOP
+    IF PosBegin >= LEN(pAttributes) THEN BREAK END
+    PosEnd = INSTRING('=', pAttributes, 1, PosBegin)
+    IF PosEnd = 0 THEN PosEnd = LEN(pAttributes) + 1 END
+    IF PosEnd = PosBegin THEN BREAK END
+    SELF.SetAttributeLabel(SUB(pAttributes, PosBegin, PosEnd - PosBegin))
+    ! Find Value
+    PosBegin = INSTRING('"', pAttributes, 1, PosEnd + 1)
+    IF PosBegin > 0 THEN 
+      PosEnd = INSTRING('"', pAttributes, 1, PosBegin + 1)
+      IF PosEnd = 0 THEN PosEnd = LEN(pAttributes) END
+      PosEnd += 1
+      SELF.SetAttributeValue(SUB(pAttributes, PosBegin, PosEnd - PosBegin))
+      PosBegin = PosEnd + 1
+    END
+    ADD(SELF.Attributes)
+    CLEAR(SELF.Attributes)
+    IF PosBegin = 0 THEN BREAK END
+  END
+
+  
+xObject.SetAttributeLabel   PROCEDURE(STRING pLabel)!, VIRTUAL
+  CODE
+  IF SELF.Attributes &= NULL THEN 
+    RETURN
+  END
+  IF NOT SELF.Attributes.Label &= NULL THEN 
+    DISPOSE(SELF.Attributes.Label) 
+  END
+  SELF.Attributes.Label &= NEW CSTRING(LEN(pLabel) + 1)
+  SELF.Attributes.Label = pLabel & '<0>'
+  !SELF.DebugOutput('SetAttribute Label=' & SELF.Attributes.Label & '.')
+
+  
+xObject.SetAttributeValue   PROCEDURE(STRING pValue)!, VIRTUAL
+  CODE
+  IF SELF.Attributes &= NULL THEN 
+    RETURN
+  END
+  IF NOT SELF.Attributes.Value &= NULL THEN 
+    DISPOSE(SELF.Attributes.Value) 
+  END
+  SELF.Attributes.Value &= NEW CSTRING(LEN(pValue) + 1)
+  SELF.Attributes.Value = pValue & '<0>'
+  !SELF.DebugOutput('SetAttribute Value=' & SELF.Attributes.Value & '.')
+
+  
+xObject.SetContents PROCEDURE(STRING pContents)!, VIRTUAL
+  CODE
+  IF NOT SELF.Contents &= NULL THEN 
+    DISPOSE(SELF.Contents) 
+  END
+  SELF.Contents &= NEW CSTRING(LEN(pContents) + 1)
+  !SELF.Contents = pContents & '<0>'
+  SELF.Contents = SELF.RemoveBlanks(pContents) & '<0>'
+  
+  
+! Getters
+
+  
+xObject.ToStringAttributes  PROCEDURE()!, STRING, PRIVATE, VIRTUAL
+I                             LONG
+X                             gcCString
+  CODE
+  IF SELF.Attributes &= NULL THEN RETURN '' END
+  IF RECORDS(SELF.Attributes) = 0 THEN RETURN '' END
+!  GET(SELF.Attributes, 1)
+!  RETURN SELF.Attributes.Label
+
+  !SELF.DebugOutput('ToStringAttributes Records=' & RECORDS(SELF.Attributes))
+  X.Init(1024 * 1024)
+  LOOP I = 1 TO RECORDS(SELF.Attributes)
+    GET(SELF.Attributes, I)
+    IF I > 1 THEN 
+      X.Value = X.Value & ' '
+    END
+    IF NOT SELF.Attributes.Label &= NULL THEN
+      X.Value = X.Value & SELF.Attributes.Label
+    END
+    IF NOT SELF.Attributes.Value &= NULL THEN
+      X.Value = X.Value & '=' & SELF.Attributes.Value
+    END
+  END
+  RETURN X.Value
+
+    
+xObject.ToStringChildren    PROCEDURE()!, STRING, PRIVATE, VIRTUAL
+I                             LONG
+X                             gcCString
+  CODE
+  X.Init(1024 * 1024)
   LOOP I = 1 TO RECORDS(SELF.xChilderen)
     GET(SELF.xChilderen, I)
     X.Value = X.Value & SELF.xChilderen.Obj.ToString()
@@ -166,7 +284,7 @@ X                             &gcCString
 xObject.ToString    PROCEDURE(BYTE pRecursive=True)!(BYTE pRecursive=True), STRING, VIRTUAL
   CODE
   RETURN '<' & CHOOSE(SELF._Closing, '/', '') & CHOOSE(SELF.LengthTag() > 0, SELF.Tag, '') & | 
-         CHOOSE(SELF.LengthAttributes() > 0, ' ' & SELF.Attributes, '') & CHOOSE(SELF._Closed, '/', '') & '>' & | 
+         CHOOSE(SELF.LengthAttributes() > 0, ' ' & SELF.ToStringAttributes(), '') & CHOOSE(SELF._Closed, '/', '') & '>' & | 
          |!CHOOSE(SELF.LengthContents() > 0, SELF.Contents, '') & |
          CHOOSE(SELF.LengthContents() > 0, '....', '') & |
          CHOOSE(pRecursive = True, SELF.ToStringChildren(), CHOOSE(NOT SELF.xClose &= NULL, SELF.xClose.ToString(False)))
@@ -257,12 +375,17 @@ xObject.LengthTag   PROCEDURE()!, LONG, VIRTUAL ! Length of tag string e.g. <p> 
 
   
 xObject.LengthAttributes    PROCEDURE()!, LONG, VIRTUAL ! Length of string e.g. <p class="ClassAttribute"> -> 22
+I                             LONG
+X                             LONG
   CODE
-  IF SELF.Attributes &= NULL THEN
-    RETURN 0
-  ELSE
-    RETURN LEN(SELF.Attributes)
+  X = 0
+  LOOP I = 1 TO RECORDS(SELF.Attributes)
+    GET(SELF.Attributes, I)
+    IF I > 1 THEN X += 1 END
+    X = X + LEN(SELF.Attributes.Label) + 1 +  LEN(SELF.Attributes.Value)
   END
+  RETURN X
+
 
 
 xObject.LengthContents  PROCEDURE()!, LONG, VIRTUAL ! Length of string e.g. <p>contents</p> -> 8
@@ -282,9 +405,8 @@ S                         LONG ! Source Index
 D                         LONG ! Destination Index
 Ret                       gcCString
   CODE
-  !Ret &= Ret._New(LEN(pStr) + 1)
+  Ret.Init(LEN(pStr) + 1)
   !SELF.DebugOutput('RemoveBlanks(' & LEN(pStr) & '/' & SIZE(pStr) & ')')
-  Ret.Resize(LEN(pStr) + 1)
   D = 0
   LOOP S = 1 TO LEN(pStr)
     IF VAL(pStr[S]) <= 27 THEN CYCLE END ! No special (escape) characters

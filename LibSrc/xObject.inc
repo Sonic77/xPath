@@ -13,13 +13,19 @@ xObjects            QUEUE()
 Obj                   &xObject
                     END
 
+xAttributes         QUEUE()
+Label                 &CSTRING
+Value                 &CSTRING
+                    END
+
 
 xObject             CLASS, TYPE, MODULE('xObject.CLW'), LINK('xObject.CLW', _ABCLinkMode_), DLL(_ABCDLLMode_)
 
 ! Data
 Level                 LONG
 Tag                   &CSTRING
-Attributes            &CSTRING
+!Attributes            &CSTRING
+Attributes            &xAttributes
 Contents              &CSTRING
 _Closed               BYTE, PROTECTED
 _Closing              BYTE, PROTECTED
@@ -41,7 +47,18 @@ AddChild              PROCEDURE(*xObject pxObj), VIRTUAL
 
 ! Properties
 FromString            PROCEDURE(STRING pxStr), VIRTUAL
+
+! Setters
+SetLevel              PROCEDURE(LONG pLevel), VIRTUAL
+SetTag                PROCEDURE(STRING pTag), VIRTUAL
+SetAttributes         PROCEDURE(STRING pAttributes), VIRTUAL
+SetAttributeLabel     PROCEDURE(STRING pLabel), VIRTUAL
+SetAttributeValue     PROCEDURE(STRING pValue), VIRTUAL
+SetContents           PROCEDURE(STRING pContents), VIRTUAL
+
+! Getters
 ToStringChildren      PROCEDURE(), STRING, PRIVATE, VIRTUAL
+ToStringAttributes    PROCEDURE(), STRING, PRIVATE, VIRTUAL
 ToString              PROCEDURE(BYTE pRecursive=True), STRING, VIRTUAL
 IsMeta                PROCEDURE(), BYTE, VIRTUAL ! e.g. <!DOCTYPE html>
 IsComment             PROCEDURE(), BYTE, VIRTUAL ! e.g. <-- --/>
