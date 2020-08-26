@@ -5,8 +5,6 @@
 _xObject_           EQUATE(1)
 
 
-FLOAT               EQUATE(REAL)
-
 xObjectMaxLevels    EQUATE(99) ! Maximum level over tags for recursive parsing
 
 xObjects            QUEUE()
@@ -44,6 +42,9 @@ Destruct              PROCEDURE, PROTECTED
 ! Relationships
 FindParent            PROCEDURE(<STRING pxTag>), *xObject, VIRTUAL
 AddChild              PROCEDURE(*xObject pxObj), VIRTUAL
+FindAttribute         PROCEDURE(<STRING pLabel>), LONG, VIRTUAL
+!TODO: AddAttribute
+!TODO: GetAttribute
 
 ! Properties
 FromString            PROCEDURE(STRING pxStr), VIRTUAL
@@ -59,7 +60,7 @@ SetContents           PROCEDURE(STRING pContents), VIRTUAL
 ! Getters
 ToStringChildren      PROCEDURE(), STRING, PRIVATE, VIRTUAL
 ToStringAttributes    PROCEDURE(), STRING, PRIVATE, VIRTUAL
-ToString              PROCEDURE(BYTE pRecursive=True), STRING, VIRTUAL
+ToString              PROCEDURE(BYTE pRecursive=False), STRING, VIRTUAL
 IsMeta                PROCEDURE(), BYTE, VIRTUAL ! e.g. <!DOCTYPE html>
 IsComment             PROCEDURE(), BYTE, VIRTUAL ! e.g. <-- --/>
 IsClosed              PROCEDURE(), BYTE, VIRTUAL ! e.g <br />

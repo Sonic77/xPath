@@ -34,6 +34,11 @@ I                       LONG
   IF NOT SELF.Tag &= NULL THEN 
     DISPOSE(SELF.Tag) 
   END
+  LOOP I = 1 TO RECORDS(SELF.Attributes)
+    GET(SELF.Attributes, I)
+    DISPOSE(SELF.Attributes.Label)
+    DISPOSE(SELF.Attributes.Value)
+  END
   DISPOSE(SELF.Attributes)
   IF NOT SELF.Contents &= NULL THEN 
     DISPOSE(SELF.Contents) 
@@ -61,9 +66,25 @@ xParent               &xObject
 
 xObject.AddChild    PROCEDURE(*xObject pxObj)!, VIRTUAL
   CODE
+  IF pxObj &= NULL THEN RETURN END
   SELF.xChilderen.Obj &= pxObj
   ADD(SELF.xChilderen)
+
   
+xObject.FindAttribute   PROCEDURE(<STRING pLabel>)!, LONG, VIRTUAL
+I                         LONG
+
+  CODE
+  IF SELF.Attributes &= NULL THEN RETURN '' END
+  IF RECORDS(SELF.Attributes) = 0 THEN RETURN '' END
+  LOOP I = 1 TO RECORDS(SELF.Attributes)
+    GET(SELF.Attributes, I)
+    IF NOT SELF.Attributes.Label &= NULL AND UPPER(SELF.Attributes.Label) = UPPER(pLabel) THEN
+      RETURN I
+    END
+  END
+  RETURN 0
+
 
 ! Properties
   
@@ -144,6 +165,11 @@ PosAttr               LONG
   IF NOT SELF.xParent &= NULL THEN ! Link parent to child
     SELF.xParent.AddChild(SELF)
   END
+  IF SELF.xParent &= NULL AND NOT SELF.xPrevious &= NULL THEN ! When no parent (root level) child to previous tag
+    SELF.xPrevious.AddChild(SELF)
+    SELF.xParent          &= SELF.xPrevious
+    SELF.Level             = SELF.xPrevious.Level + 1
+  END
 
   SELF.DebugOutput('FromString: ' & CHOOSE(SELF._Closed = True, 'Closed/', CHOOSE(SELF._Closing, '/Closing', 'Opening')) & | 
     CHOOSE(SELF.LengthTag() > 0, ', Tag=''' & SELF.Tag & '''', '') & | 
@@ -174,8 +200,10 @@ xObject.SetTag      PROCEDURE(STRING pTag)!, VIRTUAL
 
   
 xObject.SetAttributes   PROCEDURE(STRING pAttributes)!, VIRTUAL
-PosBegin              LONG
-PosEnd                LONG
+PosBegin                  LONG
+PosBegin2                 LONG
+PosEnd                    LONG
+Quot                      STRING(1)
 
   CODE
   !SELF.Attributes &= NEW CSTRING(LEN(pAttributes) + 1)
@@ -190,9 +218,16 @@ PosEnd                LONG
     IF PosEnd = PosBegin THEN BREAK END
     SELF.SetAttributeLabel(SUB(pAttributes, PosBegin, PosEnd - PosBegin))
     ! Find Value
-    PosBegin = INSTRING('"', pAttributes, 1, PosEnd + 1)
+    PosBegin  = INSTRING('"', pAttributes, 1, PosEnd + 1)
+    PosBegin2 = INSTRING('''', pAttributes, 1, PosEnd + 1)
+    IF PosBegin < PosBegin2 THEN 
+      PosBegin = PosBegin2 
+      Quot = ''''
+    ELSE
+      Quot = '"'
+    END
     IF PosBegin > 0 THEN 
-      PosEnd = INSTRING('"', pAttributes, 1, PosBegin + 1)
+      PosEnd = INSTRING(Quot, pAttributes, 1, PosBegin + 1)
       IF PosEnd = 0 THEN PosEnd = LEN(pAttributes) END
       PosEnd += 1
       SELF.SetAttributeValue(SUB(pAttributes, PosBegin, PosEnd - PosBegin))
@@ -249,9 +284,6 @@ X                             gcCString
   CODE
   IF SELF.Attributes &= NULL THEN RETURN '' END
   IF RECORDS(SELF.Attributes) = 0 THEN RETURN '' END
-!  GET(SELF.Attributes, 1)
-!  RETURN SELF.Attributes.Label
-
   !SELF.DebugOutput('ToStringAttributes Records=' & RECORDS(SELF.Attributes))
   X.Init(1024 * 1024)
   LOOP I = 1 TO RECORDS(SELF.Attributes)
@@ -273,6 +305,8 @@ xObject.ToStringChildren    PROCEDURE()!, STRING, PRIVATE, VIRTUAL
 I                             LONG
 X                             gcCString
   CODE
+  IF SELF.xChilderen &= NULL THEN RETURN '' END
+  IF RECORDS(SELF.xChilderen) = 0 THEN RETURN '' END
   X.Init(1024 * 1024)
   LOOP I = 1 TO RECORDS(SELF.xChilderen)
     GET(SELF.xChilderen, I)
@@ -281,14 +315,13 @@ X                             gcCString
   RETURN X.Value
 
   
-xObject.ToString    PROCEDURE(BYTE pRecursive=True)!(BYTE pRecursive=True), STRING, VIRTUAL
+xObject.ToString    PROCEDURE(BYTE pRecursive=False)!(BYTE pRecursive=True), STRING, VIRTUAL
   CODE
   RETURN '<' & CHOOSE(SELF._Closing, '/', '') & CHOOSE(SELF.LengthTag() > 0, SELF.Tag, '') & | 
          CHOOSE(SELF.LengthAttributes() > 0, ' ' & SELF.ToStringAttributes(), '') & CHOOSE(SELF._Closed, '/', '') & '>' & | 
          |!CHOOSE(SELF.LengthContents() > 0, SELF.Contents, '') & |
-         CHOOSE(SELF.LengthContents() > 0, '....', '') & |
-         CHOOSE(pRecursive = True, SELF.ToStringChildren(), CHOOSE(NOT SELF.xClose &= NULL, SELF.xClose.ToString(False)))
-
+         CHOOSE(SELF.LengthContents() > 0, SELF.Contents, '') & |
+         CHOOSE(pRecursive = True, SELF.ToStringChildren(), CHOOSE(SELF.xClose &= NULL, '', SELF.xClose.ToString(False)))
   
   
 xObject.IsMeta      PROCEDURE()!, BYTE, VIRTUAL
@@ -378,6 +411,7 @@ xObject.LengthAttributes    PROCEDURE()!, LONG, VIRTUAL ! Length of string e.g. 
 I                             LONG
 X                             LONG
   CODE
+  IF SELF.Attributes &= NULL THEN RETURN 0 END
   X = 0
   LOOP I = 1 TO RECORDS(SELF.Attributes)
     GET(SELF.Attributes, I)
