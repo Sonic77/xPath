@@ -9,19 +9,19 @@ _xPath_           EQUATE(1)
 
 xPathSearch         ITEMIZE, PRE(xPathSearch)
 None                  EQUATE
-Tag                   EQUATE
+Node                  EQUATE
 Attribute             EQUATE
-TagAndAttribute       EQUATE
+NodeAndAttribute      EQUATE
                     END
 
 
 xResultObjects      QUEUE(xObjects)
-Index                 LONG
+AttributeIndex        LONG
+SearchLevel           LONG
                     END
 
 
 xPath               CLASS, TYPE, MODULE('xPath.CLW'), LINK('xPath.CLW', _ABCLinkMode_), DLL(_ABCDLLMode_)
-! TODO: Rename Tag->Node
 
 ! Data
 xRoot                 &xObject
@@ -35,10 +35,10 @@ Destruct              PROCEDURE, PROTECTED
 Load                  PROCEDURE(STRING pxStr), VIRTUAL
 Free                  PROCEDURE(), VIRTUAL
 Search                PROCEDURE(<xObject pxRoot>, STRING pxQuery), LONG, VIRTUAL
-FindAllTag            PROCEDURE(<xObject pxRoot>, STRING pTag, BYTE pPathSearch=xPathSearch:Tag), LONG, VIRTUAL ! Searches all Tags first to last
-FindAllChildTag       PROCEDURE(<xObject pxRoot>, STRING pTag, BYTE pPathSearch=xPathSearch:Tag, BYTE pRecursive=True), LONG, VIRTUAL ! Searches tag and child tags
-MatchTag              PROCEDURE(xObject pxObj, STRING pTag, BYTE pPathSearch=xPathSearch:Tag), LONG, PRIVATE, VIRTUAL ! Searches tag
-AddTag                PROCEDURE(xObject pxObj, LONG pIndex), PRIVATE, VIRTUAL ! Adds a tag to search results
+FindAllNodes          PROCEDURE(<xObject pxRoot>, STRING pNode, BYTE pPathSearch=xPathSearch:Node), LONG, VIRTUAL ! Searches all Nodes first to last
+FindAllChildNodes     PROCEDURE(<xObject pxRoot>, STRING pNode, BYTE pPathSearch=xPathSearch:Node, BYTE pRecursive=True), LONG, VIRTUAL ! Searches Node and child Nodes
+MatchNode             PROCEDURE(xObject pxObj, STRING pNode, BYTE pPathSearch=xPathSearch:Node), LONG, PRIVATE, VIRTUAL ! Searches Node
+AddNode               PROCEDURE(xObject pxObj, LONG pIndex), PRIVATE, VIRTUAL ! Adds a Node to search results
 ToString              PROCEDURE(), STRING, VIRTUAL
 
 ! Getters

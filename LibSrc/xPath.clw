@@ -71,28 +71,28 @@ Count                 LONG
   IF    SUB(pxQuery, PosBegin, 2) = '..' THEN ! .. : Selects the parent of the current node
     PosBegin += 2
     IF NOT Obj.xParent &= NULL THEN
-      SELF.AddTag(Obj.xParent, 0)
+      SELF.AddNode(Obj.xParent, 0)
       Count += 1
     END
   ELSIF SUB(pxQuery, PosBegin, 1) = '.'  THEN ! .  : Selects the current node
     PosBegin += 1
-    SELF.AddTag(Obj, 0)
+    SELF.AddNode(Obj, 0)
     Count += 1
   ELSIF SUB(pxQuery, PosBegin, 2) = '//' THEN ! // : Selects nodes in the document from the current node that match the selection no matter where they are 
     PosBegin += 2
-    Count += SELF.FindAllChildTag(Obj, SUB(pxQuery, PosBegin, PosEnd - PosBegin + 1), xPathSearch:TagAndAttribute, True)
+    Count += SELF.FindAllChildNodes(Obj, SUB(pxQuery, PosBegin, PosEnd - PosBegin + 1), xPathSearch:NodeAndAttribute, True)
   ELSIF SUB(pxQuery, PosBegin, 1) = '/'  THEN ! /  : Selects from the root node
     PosBegin += 1
-    Count += SELF.FindAllChildTag(Obj, SUB(pxQuery, PosBegin, PosEnd - PosBegin + 1), xPathSearch:TagAndAttribute, False)
+    Count += SELF.FindAllChildNodes(Obj, SUB(pxQuery, PosBegin, PosEnd - PosBegin + 1), xPathSearch:NodeAndAttribute, False)
   ELSE                                        !    : Selects all nodes with the name
-    Count += SELF.FindAllTag(Obj, SUB(pxQuery, PosBegin, PosEnd - PosBegin + 1), xPathSearch:TagAndAttribute)
+    Count += SELF.FindAllNodes(Obj, SUB(pxQuery, PosBegin, PosEnd - PosBegin + 1), xPathSearch:NodeAndAttribute)
   END
   SELF.DebugOutput('Search End: ' & pxQuery)
     
   RETURN Count
   
 
-xPath.FindAllTag    PROCEDURE(<xObject pxRoot>, STRING pTag, BYTE pPathSearch=xPathSearch:Tag)!, LONG, VIRTUAL ! Searches all Tags first to last
+xPath.FindAllNodes  PROCEDURE(<xObject pxRoot>, STRING pNode, BYTE pPathSearch=xPathSearch:Node)!, LONG, VIRTUAL ! Searches all Nodes first to last
 Obj                   &xObject
 I                     LONG
 Count                 LONG
@@ -104,33 +104,16 @@ Count                 LONG
     Obj &= SELF.xRoot
   END
   IF Obj &= NULL THEN RETURN 0 END
-  SELF.DebugOutput('FindAllTag Begin')
+  !SELF.DebugOutput('FindAllNodes Begin')
   LOOP
-    Count += SELF.MatchTag(Obj, pTag, pPathSearch)
-!    IF Obj.LengthTag() = 0 AND UPPER(Obj.Tag) = UPPER(pTag) AND Obj.IsClose() = False THEN
-!      SELF.xResults.Obj   &= Obj
-!      SELF.xResults.Index  = 0
-!      SELF.DebugOutput('FindAllTag found: ' & SELF.xResults.Obj.ToString())
-!      ADD(SELF.xResults)
-!      Count += 1
-!    END
-!    IF pSearchAttributes = True THEN 
-!      I = Obj.FindAttribute(pTag)
-!      IF I > 0 THEN
-!        SELF.xResults.Obj   &= Obj
-!        SELF.xResults.Index  = I
-!        SELF.DebugOutput('FindAllTag found attribute ' & I & ': ' & SELF.xResults.Obj.ToString())
-!        ADD(SELF.xResults)
-!        Count += 1
-!      END
-!    END
+    Count += SELF.MatchNode(Obj, pNode, pPathSearch)
     Obj &= Obj.xNext
   UNTIL Obj &= NULL
-  SELF.DebugOutput('FindAllTag End')
+  !SELF.DebugOutput('FindAllNodes End')
   RETURN Count
   
     
-xPath.FindAllChildTag   PROCEDURE(<xObject pxRoot>, STRING pTag, BYTE pPathSearch=xPathSearch:Tag, BYTE pRecursive=True)!, LONG, VIRTUAL ! Searches tag and child tags
+xPath.FindAllChildNodes PROCEDURE(<xObject pxRoot>, STRING pNode, BYTE pPathSearch=xPathSearch:Node, BYTE pRecursive=True)!, LONG, VIRTUAL ! Searches Node and child Nodes
 Obj                   &xObject
 I                     LONG
 Count                 LONG
@@ -142,57 +125,51 @@ Count                 LONG
     Obj &= SELF.xRoot
   END
   IF Obj &= NULL THEN RETURN 0 END
-  !SELF.DebugOutput('FindAllChildTag Begin in ' & Obj.ToString())
-  Count += SELF.MatchTag(Obj, pTag, pPathSearch)
-!  IF Obj.LengthTag() = 0 AND UPPER(Obj.Tag) = UPPER(pTag) THEN
-!    SELF.xResults.Obj &= Obj
-!    SELF.DebugOutput('FindAllTag found: ' & SELF.xResults.Obj.ToString())
-!    ADD(SELF.xResults)
-!    Count += 1
-!  END
-  !SELF.DebugOutput('FindAllChildTag Recursive? ' & pRecursive & ', ' & RECORDS(Obj.xChilderen))
+  !SELF.DebugOutput('FindAllChildNodes Begin in ' & Obj.ToString())
+  Count += SELF.MatchNode(Obj, pNode, pPathSearch)
+  !SELF.DebugOutput('FindAllChildNodes Recursive? ' & pRecursive & ', ' & RECORDS(Obj.xChilderen))
   IF pRecursive = True AND NOT Obj.xChilderen &= NULL AND RECORDS(Obj.xChilderen) > 0 THEN
     LOOP I = 1 TO RECORDS(Obj.xChilderen)
       GET(Obj.xChilderen, I)
-      Count += SELF.FindAllChildTag(Obj.xChilderen.Obj, pTag, pPathSearch, pRecursive)
+      Count += SELF.FindAllChildNodes(Obj.xChilderen.Obj, pNode, pPathSearch, pRecursive)
     END
   END
-  !SELF.DebugOutput('FindAllChildTag End')
+  !SELF.DebugOutput('FindAllChildNodes End')
   RETURN Count
 
   
-xPath.MatchTag              PROCEDURE(xObject pxObj, STRING pTag, BYTE pPathSearch=xPathSearch:Tag)!, LONG, PRIVATE, VIRTUAL ! Searches tag
+xPath.MatchNode     PROCEDURE(xObject pxObj, STRING pNode, BYTE pPathSearch=xPathSearch:Node)!, LONG, PRIVATE, VIRTUAL ! Searches Node
 I                     LONG
 Count                 LONG
 
   CODE
   IF pxObj &= NULL THEN RETURN 0 END
   IF pPathSearch = xPathSearch:None THEN RETURN 0 END
-  !SELF.DebugOutput('MatchTag Begin ' & pTag & ' in ' & pxObj.ToString())
-  IF pPathSearch = xPathSearch:Tag OR pPathSearch = xPathSearch:TagAndAttribute THEN
-    IF pxObj.LengthTag() > 0 AND UPPER(pxObj.Tag) = UPPER(pTag) AND pxObj.IsClose() = False THEN
-      SELF.DebugOutput('MatchTag found tag: ' & pxObj.ToString())
-      SELF.AddTag(pxObj, 0)
+  !SELF.DebugOutput('MatchNode Begin ' & pNode & ' in ' & pxObj.ToString())
+  IF pPathSearch = xPathSearch:Node OR pPathSearch = xPathSearch:NodeAndAttribute THEN
+    IF pxObj.LengthTag() > 0 AND UPPER(pxObj.Tag) = UPPER(pNode) AND pxObj.IsClose() = False THEN
+      SELF.DebugOutput('MatchNode found Node: ' & pxObj.ToString())
+      SELF.AddNode(pxObj, 0)
       Count += 1
     END
   END
-  IF pPathSearch = xPathSearch:Attribute OR pPathSearch = xPathSearch:TagAndAttribute THEN 
-    I = pxObj.FindAttribute(pTag)
+  IF pPathSearch = xPathSearch:Attribute OR pPathSearch = xPathSearch:NodeAndAttribute THEN 
+    I = pxObj.FindAttribute(pNode)
     IF I > 0 THEN
-      SELF.DebugOutput('MatchTag found attribute ' & I & ': ' & pxObj.ToString())
-      SELF.AddTag(pxObj, I)
+      SELF.DebugOutput('MatchNode found attribute ' & I & ': ' & pxObj.ToString())
+      SELF.AddNode(pxObj, I)
       Count += 1
     END
   END
-  !SELF.DebugOutput('MatchTag End')
+  !SELF.DebugOutput('MatchNode End')
   RETURN Count
   
   
-xPath.AddTag        PROCEDURE(xObject pxObj, LONG pIndex)!, PRIVATE, VIRTUAL ! Adds a tag to search results
+xPath.AddNode       PROCEDURE(xObject pxObj, LONG pIndex)!, PRIVATE, VIRTUAL ! Adds a Node to search results
   CODE
-  SELF.xResults.Obj   &= pxObj
-  SELF.xResults.Index  = pIndex
-  !SELF.DebugOutput('AddTag ' & pIndex & ': ' & pxObj.ToString())
+  SELF.xResults.Obj            &= pxObj
+  SELF.xResults.AttributeIndex  = pIndex
+  !SELF.DebugOutput('AddNode ' & pIndex & ': ' & pxObj.ToString())
   ADD(SELF.xResults)
 
 
