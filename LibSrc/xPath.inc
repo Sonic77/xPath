@@ -59,6 +59,7 @@ MatchNode             PROCEDURE(xResultObjects pxResults, xObject pxObj, STRING 
 AddNode               PROCEDURE(xObject pxObj, LONG pIndex), PRIVATE, VIRTUAL ! Adds a Node to search results
 AddNode               PROCEDURE(xResultObjects pxResults, xObject pxObj, LONG pIndex), PRIVATE, VIRTUAL ! Adds a Node to search results
 ToString              PROCEDURE(), STRING, VIRTUAL
+ToStringNodes         PROCEDURE(), STRING, VIRTUAL
 
 ! Getters
 Records               PROCEDURE(), LONG, VIRTUAL

@@ -70,6 +70,8 @@ IsNoNesting           PROCEDURE(), BYTE, VIRTUAL ! e.g. <script>
 LengthTag             PROCEDURE(), LONG, VIRTUAL ! Length of tag string e.g. <p> -> 1
 LengthAttributes      PROCEDURE(), LONG, VIRTUAL ! Length of attributes string e.g. <p class="ClassAttribute"> -> 22
 LengthContents        PROCEDURE(), LONG, VIRTUAL ! Length of contents string e.g. <p>contents</p> -> 8
+GetAttributeLabel     PROCEDURE(LONG pIndex), STRING, VIRTUAL
+GetAttributeValue     PROCEDURE(LONG pIndex), STRING, VIRTUAL
 
 ! Helpers
 RemoveBlanks          PROCEDURE(STRING pStr), STRING, VIRTUAL

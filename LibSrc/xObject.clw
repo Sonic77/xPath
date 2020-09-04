@@ -429,8 +429,26 @@ xObject.LengthContents  PROCEDURE()!, LONG, VIRTUAL ! Length of string e.g. <p>c
   ELSE
     RETURN LEN(SELF.Contents)
   END
+
   
+xObject.GetAttributeLabel   PROCEDURE(LONG pIndex)!, STRING, VIRTUAL
+  CODE
+  IF SELF.Attributes &= NULL THEN RETURN '' END
+  GET(SELF.Attributes, pIndex)
+  IF ERRORCODE() THEN RETURN '' END
+  IF SELF.Attributes.Label &= NULL THEN RETURN '' END
+  RETURN SELF.Attributes.Label
+
   
+xObject.GetAttributeValue   PROCEDURE(LONG pIndex)!, STRING, VIRTUAL
+  CODE
+  IF SELF.Attributes &= NULL THEN RETURN '' END
+  GET(SELF.Attributes, pIndex)
+  IF ERRORCODE() THEN RETURN '' END
+  IF SELF.Attributes.Value &= NULL THEN RETURN '' END
+  RETURN SELF.Attributes.Value
+
+
 ! Helpers
   
   
