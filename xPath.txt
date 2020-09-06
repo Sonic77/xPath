@@ -1,0 +1,112 @@
+Author: Eric Lankreijer
+
+This document contains excerpts from w3schools.com. It will give a short description of all features that are and are not supported in this implementation.
+
+Usage:
+
+  DATA
+xPth xPath
+  CODE
+  xPth.Load('<html><figure><a href="link">...') ! Load XML/HTML string
+  xPth.Search('//figure//@href') ! Execute xPath search query (find all 'href' attributes nested in 'figure' nodes)
+  MESSAGE(xPth.ToString()) ! Show results (as tab separated values)
+  xPth.Free() ! Clear results / prepare for next query
+
+
+--------------------------------
+https://www.w3schools.com/xml/xpath_intro.asp
+--------------------------------
+
+XPath stands for XML Path Language
+XPath uses "path like" syntax to identify and navigate nodes in an XML document
+
+--------------------------------
+https://www.w3schools.com/xml/xpath_nodes.asp
+--------------------------------
+In XPath, there are seven kinds of nodes: element, attribute, text, namespace, processing-instruction, comment, and document nodes.
+XML documents are treated as trees of nodes. The topmost element of the tree is called the root element.
+
+--------------------------------
+https://www.w3schools.com/xml/xpath_syntax.asp
+--------------------------------
+
+Selecting Nodes (all SUPPORTED)
+
+XPath uses path expressions to select nodes in an XML document. The node is selected by following a path or steps. The most useful path expressions are listed below:
+  nodename 	Selects all nodes with the name "nodename"
+  / 	Selects from the root node
+  // 	Selects nodes in the document from the current node that match the selection no matter where they are
+  . 	Selects the current node
+  .. 	Selects the parent of the current node
+  @ 	Selects attributes
+
+Predicates (UNSUPPORTED)
+
+Predicates are used to find a specific node or a node that contains a specific value.
+Predicates are always embedded in square brackets.
+  /bookstore/book[1] 	Selects the first book element that is the child of the bookstore element.
+  In JavaScript: xml.setProperty("SelectionLanguage","XPath");
+  /bookstore/book[last()] 	Selects the last book element that is the child of the bookstore element
+  /bookstore/book[last()-1] 	Selects the last but one book element that is the child of the bookstore element
+  /bookstore/book[position()<3] 	Selects the first two book elements that are children of the bookstore element
+  //title[@lang] 	Selects all the title elements that have an attribute named lang
+  //title[@lang='en'] 	Selects all the title elements that have a "lang" attribute with a value of "en"
+  /bookstore/book[price>35.00] 	Selects all the book elements of the bookstore element that have a price element with a value greater than 35.00
+  /bookstore/book[price>35.00]/title 	Selects all the title elements of the book elements of the bookstore element that have a price element with a value greater than 35.00
+
+Selecting Unknown Nodes (UNSUPPORTED)
+
+XPath wildcards can be used to select unknown XML nodes.
+  * 	Matches any element node
+  @* 	Matches any attribute node
+  node() 	Matches any node of any kind
+
+Selecting Several Paths (UNSUPPORTED)
+
+By using the | operator in an XPath expression you can select several paths.
+  //book/title | //book/price 	Selects all the title AND price elements of all book elements
+  //title | //price 	Selects all the title AND price elements in the document
+  /bookstore/book/title | //price 	Selects all the title elements of the book element of the bookstore element AND all the price elements in the document
+
+--------------------------------
+https://www.w3schools.com/xml/xpath_axes.asp
+--------------------------------
+
+XPath Axes (UNSUPPORTED)
+
+An axis represents a relationship to the context (current) node, and is used to locate nodes relative to that node on the tree.
+  ancestor 	Selects all ancestors (parent, grandparent, etc.) of the current node
+  ancestor-or-self 	Selects all ancestors (parent, grandparent, etc.) of the current node and the current node itself
+  attribute 	Selects all attributes of the current node
+  child 	Selects all children of the current node
+  descendant 	Selects all descendants (children, grandchildren, etc.) of the current node
+  descendant-or-self 	Selects all descendants (children, grandchildren, etc.) of the current node and the current node itself
+  following 	Selects everything in the document after the closing tag of the current node
+  following-sibling 	Selects all siblings after the current node
+  namespace 	Selects all namespace nodes of the current node
+  parent 	Selects the parent of the current node
+  preceding 	Selects all nodes that appear before the current node in the document, except ancestors, attribute nodes and namespace nodes
+  preceding-sibling 	Selects all siblings before the current node
+  self 	Selects the current node
+
+--------------------------------
+https://www.w3schools.com/xml/xpath_operators.asp
+--------------------------------
+
+XPath Operators (UNSUPPORTED)
+
+Below is a list of the operators that can be used in XPath expressions:
+| 	Computes two node-sets 	//book | //cd
+  + 	Addition 	6 + 4
+  - 	Subtraction 	6 - 4
+  * 	Multiplication 	6 * 4
+  div 	Division 	8 div 4
+  = 	Equal 	price=9.80
+  != 	Not equal 	price!=9.80
+  < 	Less than 	price<9.80
+  <= 	Less than or equal to 	price<=9.80
+  > 	Greater than 	price>9.80
+  >= 	Greater than or equal to 	price>=9.80
+  or 	or 	price=9.80 or price=9.70
+  and 	and 	price>9.00 and price<9.90
+  mod 	Modulus (division remainder) 	5 mod 2

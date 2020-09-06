@@ -8,10 +8,10 @@ _xPath_           EQUATE(1)
   INCLUDE('xObject.inc'),ONCE
 
 xPathSearch         ITEMIZE, PRE(xPathSearch)
-None                  EQUATE
-Node                  EQUATE
-Attribute             EQUATE
-NodeAndAttribute      EQUATE
+None                  EQUATE(0) ! No bit
+Node                  EQUATE(1) ! Bit 0
+Attribute             EQUATE(2) ! Bit 1
+NodeAndAttribute      EQUATE(3) ! Bit 0+1
                     END
 
 xPathSearchLevel    ITEMIZE, PRE(xPathSearchLevel)
@@ -30,6 +30,7 @@ xPathRoot           EQUATE('/')  ! /  : Selects from the root node
 xPathAnywhere       EQUATE('//') ! // : Selects nodes in the document from the current node that match the selection no matter where they are 
 xPathCurrent        EQUATE('.')  ! .  : Selects the current node
 xPathParent         EQUATE('..') ! .. : Selects the parent of the current node
+xPathAttribute      EQUATE('@')  ! @  : Selects attributes
 
 
 xPath               CLASS, TYPE, MODULE('xPath.CLW'), LINK('xPath.CLW', _ABCLinkMode_), DLL(_ABCDLLMode_)
