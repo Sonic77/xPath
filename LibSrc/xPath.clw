@@ -113,7 +113,7 @@ Count                 LONG
       PosBegin += 1
       Count += SELF.FindAllChildNodes(pxResults, Obj, SUB(pxQuery, PosBegin, PosEnd - PosBegin + 1), xPathSearch:Attribute, True)
     ELSE
-      Count += SELF.FindAllChildNodes(pxResults, Obj, SUB(pxQuery, PosBegin, PosEnd - PosBegin + 1), xPathSearch:NodeAndAttribute, True)
+      Count += SELF.FindAllChildNodes(pxResults, Obj, SUB(pxQuery, PosBegin, PosEnd - PosBegin + 1), xPathSearch:Node, True)
     END
   ELSIF SUB(pxQuery, PosBegin, 1) = xPathRoot  THEN    ! /  : Selects from the root node
     PosBegin += 1
@@ -121,14 +121,14 @@ Count                 LONG
       PosBegin += 1
       Count += SELF.FindAllChildNodes(pxResults, Obj, SUB(pxQuery, PosBegin, PosEnd - PosBegin + 1), xPathSearch:Attribute, False)
     ELSE
-      Count += SELF.FindAllChildNodes(pxResults, Obj, SUB(pxQuery, PosBegin, PosEnd - PosBegin + 1), xPathSearch:NodeAndAttribute, False)
+      Count += SELF.FindAllChildNodes(pxResults, Obj, SUB(pxQuery, PosBegin, PosEnd - PosBegin + 1), xPathSearch:Node, False)
     END
   ELSE                                                 !    : Selects all nodes with the name
     IF SUB(pxQuery, PosBegin, 1) = '@' THEN            ! @  : Selects attributes
       PosBegin += 1
       Count += SELF.FindAllNodes(pxResults, Obj, SUB(pxQuery, PosBegin, PosEnd - PosBegin + 1), xPathSearch:Attribute)
     ELSE
-      Count += SELF.FindAllNodes(pxResults, Obj, SUB(pxQuery, PosBegin, PosEnd - PosBegin + 1), xPathSearch:NodeAndAttribute)
+      Count += SELF.FindAllNodes(pxResults, Obj, SUB(pxQuery, PosBegin, PosEnd - PosBegin + 1), xPathSearch:Node)
     END
   END
   
@@ -165,17 +165,17 @@ Count                 LONG
   RETURN Count
   
 
-xPath.FindAllNodes  PROCEDURE(STRING pNode, BYTE pPathSearch=xPathSearch:Node)!, LONG, VIRTUAL ! Searches all Nodes first to last
+xPath.FindAllNodes  PROCEDURE(STRING pNode, BYTE pPathSearch=xPathSearch:Element)!, LONG, VIRTUAL ! Searches all Nodes first to last
   CODE
   RETURN SELF.FindAllNodes(SELF.xResults, SELF.xRoot, pNode, pPathSearch)
 
 
-xPath.FindAllNodes  PROCEDURE(xObject pxRoot, STRING pNode, BYTE pPathSearch=xPathSearch:Node)!, LONG, VIRTUAL ! Searches all Nodes first to last
+xPath.FindAllNodes  PROCEDURE(xObject pxRoot, STRING pNode, BYTE pPathSearch=xPathSearch:Element)!, LONG, VIRTUAL ! Searches all Nodes first to last
   CODE
   RETURN SELF.FindAllNodes(SELF.xResults, pxRoot, pNode, pPathSearch)
 
   
-xPath.FindAllNodes  PROCEDURE(xResultObjects pxResults, <xObject pxRoot>, STRING pNode, BYTE pPathSearch=xPathSearch:Node)!, LONG, VIRTUAL ! Searches all Nodes first to last
+xPath.FindAllNodes  PROCEDURE(xResultObjects pxResults, <xObject pxRoot>, STRING pNode, BYTE pPathSearch=xPathSearch:Element)!, LONG, VIRTUAL ! Searches all Nodes first to last
 Obj                   &xObject
 I                     LONG
 Count                 LONG
@@ -196,17 +196,17 @@ Count                 LONG
   RETURN Count
   
     
-xPath.FindAllChildNodes PROCEDURE(STRING pNode, BYTE pPathSearch=xPathSearch:Node, BYTE pRecursive=True)!, LONG, VIRTUAL ! Searches Node and child Nodes
+xPath.FindAllChildNodes PROCEDURE(STRING pNode, BYTE pPathSearch=xPathSearch:Element, BYTE pRecursive=True)!, LONG, VIRTUAL ! Searches Node and child Nodes
   CODE
   RETURN SELF.FindAllChildNodes(SELF.xResults, SELF.xRoot, pNode, pPathSearch, pRecursive)
 
 
-xPath.FindAllChildNodes PROCEDURE(xObject pxRoot, STRING pNode, BYTE pPathSearch=xPathSearch:Node, BYTE pRecursive=True)!, LONG, VIRTUAL ! Searches Node and child Nodes
+xPath.FindAllChildNodes PROCEDURE(xObject pxRoot, STRING pNode, BYTE pPathSearch=xPathSearch:Element, BYTE pRecursive=True)!, LONG, VIRTUAL ! Searches Node and child Nodes
   CODE
   RETURN SELF.FindAllChildNodes(SELF.xResults, pxRoot, pNode, pPathSearch, pRecursive)
   
   
-xPath.FindAllChildNodes PROCEDURE(xResultObjects pxResults, <xObject pxRoot>, STRING pNode, BYTE pPathSearch=xPathSearch:Node, BYTE pRecursive=True)!, LONG, VIRTUAL ! Searches Node and child Nodes
+xPath.FindAllChildNodes PROCEDURE(xResultObjects pxResults, <xObject pxRoot>, STRING pNode, BYTE pPathSearch=xPathSearch:Element, BYTE pRecursive=True)!, LONG, VIRTUAL ! Searches Node and child Nodes
 Obj                   &xObject
 I                     LONG
 Count                 LONG
@@ -224,7 +224,7 @@ Count                 LONG
   IF NOT Obj.xChilderen &= NULL AND RECORDS(Obj.xChilderen) > 0 THEN
     LOOP I = 1 TO RECORDS(Obj.xChilderen)
       GET(Obj.xChilderen, I)
-      Count += SELF.MatchNode(pxResults, Obj.xChilderen.Obj, pNode, BAND(pPathSearch, xPathSearch:Node))
+      Count += SELF.MatchNode(pxResults, Obj.xChilderen.Obj, pNode, BAND(pPathSearch, xPathSearch:Element))
       IF pRecursive > 0 THEN
         Count += SELF.FindAllChildNodes(pxResults, Obj.xChilderen.Obj, pNode, pPathSearch, pRecursive + 1)
       END
@@ -234,27 +234,27 @@ Count                 LONG
   RETURN Count
 
   
-xPath.MatchNode     PROCEDURE(xObject pxObj, STRING pNode, BYTE pPathSearch=xPathSearch:Node)!, LONG, PRIVATE, VIRTUAL ! Searches Node
+xPath.MatchNode     PROCEDURE(xObject pxObj, STRING pNode, BYTE pPathSearch=xPathSearch:Element)!, LONG, PRIVATE, VIRTUAL ! Searches Node
   CODE
   RETURN SELF.MatchNode(SELF.xResults, pxObj, pNode, pPathSearch)
   
   
-xPath.MatchNode     PROCEDURE(xResultObjects pxResults, xObject pxObj, STRING pNode, BYTE pPathSearch=xPathSearch:Node)!, LONG, PRIVATE, VIRTUAL ! Searches Node
+xPath.MatchNode     PROCEDURE(xResultObjects pxResults, xObject pxObj, STRING pNode, BYTE pPathSearch=xPathSearch:Element)!, LONG, PRIVATE, VIRTUAL ! Searches Node
 I                     LONG
 Count                 LONG
 
   CODE
   IF pxObj &= NULL THEN RETURN 0 END
   IF pPathSearch = xPathSearch:None THEN RETURN 0 END
-  !SELF.DebugOutput('MatchNode Begin ' & pNode & ' ' & pPathSearch & CHOOSE(BAND(pPathSearch, xPathSearch:Node) > 0 , 'node', '') & CHOOSE(BAND(pPathSearch, xPathSearch:Attribute) > 0 , 'attribute', '') & ' in ' & pxObj.ToString())
-  IF pPathSearch = xPathSearch:Node OR pPathSearch = xPathSearch:NodeAndAttribute THEN
+  !SELF.DebugOutput('MatchNode Begin ' & pNode & ' ' & pPathSearch & CHOOSE(BAND(pPathSearch, xPathSearch:Element) > 0 , 'node', '') & CHOOSE(BAND(pPathSearch, xPathSearch:Attribute) > 0 , 'attribute', '') & ' in ' & pxObj.ToString())
+  IF pPathSearch = xPathSearch:Element OR pPathSearch = xPathSearch:Node THEN
     IF pxObj.LengthTag() > 0 AND UPPER(pxObj.Tag) = UPPER(pNode) AND pxObj.IsClose() = False THEN
       SELF.DebugOutput('MatchNode found Node: ' & pxObj.ToString())
       SELF.AddNode(pxResults, pxObj, 0)
       Count += 1
     END
   END
-  IF pPathSearch = xPathSearch:Attribute OR pPathSearch = xPathSearch:NodeAndAttribute THEN 
+  IF pPathSearch = xPathSearch:Attribute OR pPathSearch = xPathSearch:Node THEN 
     I = pxObj.FindAttribute(pNode)
     IF I > 0 THEN
       SELF.DebugOutput('MatchNode found attribute ' & I & ': ' & pxObj.ToString())

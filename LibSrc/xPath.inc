@@ -9,9 +9,10 @@ _xPath_           EQUATE(1)
 
 xPathSearch         ITEMIZE, PRE(xPathSearch)
 None                  EQUATE(0) ! No bit
-Node                  EQUATE(1) ! Bit 0
+Element               EQUATE(1) ! Bit 0
 Attribute             EQUATE(2) ! Bit 1
-NodeAndAttribute      EQUATE(3) ! Bit 0+1
+Node                  EQUATE(3) ! Bit 0+1
+ElementAndAttribute   EQUATE(xPathSearch:Node) ! Bit 0+1
                     END
 
 xPathSearchLevel    ITEMIZE, PRE(xPathSearchLevel)
