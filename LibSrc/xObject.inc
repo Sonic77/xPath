@@ -68,6 +68,7 @@ IsOpen                PROCEDURE(), BYTE, VIRTUAL ! e.g. <html>
 IsClose               PROCEDURE(), BYTE, VIRTUAL ! e.g. </html>
 IsNoNesting           PROCEDURE(), BYTE, VIRTUAL ! e.g. <script>
 LengthTag             PROCEDURE(), LONG, VIRTUAL ! Length of tag string e.g. <p> -> 1
+CountAttributes       PROCEDURE(), LONG, VIRTUAL ! Number of attributes e.g. <p class="ClassAttribute"> -> 1
 LengthAttributes      PROCEDURE(), LONG, VIRTUAL ! Length of attributes string e.g. <p class="ClassAttribute"> -> 22
 LengthContents        PROCEDURE(), LONG, VIRTUAL ! Length of contents string e.g. <p>contents</p> -> 8
 GetAttributeLabel     PROCEDURE(LONG pIndex), STRING, VIRTUAL

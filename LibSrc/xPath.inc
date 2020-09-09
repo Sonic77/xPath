@@ -32,6 +32,10 @@ xPathAnywhere       EQUATE('//') ! // : Selects nodes in the document from the c
 xPathCurrent        EQUATE('.')  ! .  : Selects the current node
 xPathParent         EQUATE('..') ! .. : Selects the parent of the current node
 xPathAttribute      EQUATE('@')  ! @  : Selects attributes
+xPathWildcard       EQUATE('*')
+xPathAnyElement     EQUATE('*')  ! *  : Matches any element node
+xPathAnyAttribute   EQUATE('@*') ! @* : Matches any attribute node
+xPathAnyNode        EQUATE('node()') ! node() : Matches any node of any kind
 
 
 xPath               CLASS, TYPE, MODULE('xPath.CLW'), LINK('xPath.CLW', _ABCLinkMode_), DLL(_ABCDLLMode_)

@@ -407,6 +407,12 @@ xObject.LengthTag   PROCEDURE()!, LONG, VIRTUAL ! Length of tag string e.g. <p> 
   END
 
   
+xObject.CountAttributes PROCEDURE()!, LONG, VIRTUAL ! Number of attributes e.g. <p class="ClassAttribute"> -> 1
+  CODE
+  IF SELF.Attributes &= NULL THEN RETURN 0 END
+  RETURN RECORDS(SELF.Attributes)
+  
+
 xObject.LengthAttributes    PROCEDURE()!, LONG, VIRTUAL ! Length of string e.g. <p class="ClassAttribute"> -> 22
 I                             LONG
 X                             LONG

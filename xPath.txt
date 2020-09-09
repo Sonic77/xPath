@@ -3,7 +3,6 @@ Author: Eric Lankreijer
 This document contains excerpts from w3schools.com. It will give a short description of all features that are and are not supported in this implementation.
 
 Usage:
-
   DATA
 xPth xPath
   CODE
@@ -54,7 +53,7 @@ Predicates are always embedded in square brackets.
   /bookstore/book[price>35.00] 	Selects all the book elements of the bookstore element that have a price element with a value greater than 35.00
   /bookstore/book[price>35.00]/title 	Selects all the title elements of the book elements of the bookstore element that have a price element with a value greater than 35.00
 
-Selecting Unknown Nodes (UNSUPPORTED)
+Selecting Unknown Nodes (all SUPPORTED)
 
 XPath wildcards can be used to select unknown XML nodes.
   * 	Matches any element node
