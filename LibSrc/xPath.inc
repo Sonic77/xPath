@@ -69,7 +69,7 @@ ToStringNodes         PROCEDURE(), STRING, VIRTUAL
 
 ! Getters
 Records               PROCEDURE(), LONG, VIRTUAL
-Get                   PROCEDURE(LONG pIndex), *xObject, VIRTUAL
+GetResult             PROCEDURE(LONG pIndex), *xObject, VIRTUAL
 
 ! Debug
 DebugOutput           PROCEDURE(STRING pMessage), VIRTUAL

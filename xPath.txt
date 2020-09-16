@@ -5,10 +5,15 @@ This document contains excerpts from w3schools.com. It will give a short descrip
 Usage:
   DATA
 xPth xPath
+xObj xObject
   CODE
   xPth.Load('<html><figure><a href="link">...') ! Load XML/HTML string
   xPth.Search('//figure//@href') ! Execute xPath search query (find all 'href' attributes nested in 'figure' nodes)
   MESSAGE(xPth.ToString()) ! Show results (as tab separated values)
+!  LOOP i# = 1 TO xPth.Records()
+!    xObj = xPth.GetResult(i#)
+!    MESSAGE('Path=' & xObj.ToStringPath() & ', Tag=' & xObj.GetTag() & ', Value=' & xObj.GetContents()) ! Show results (as tab separated values)
+!  END
   xPth.Free() ! Clear results / prepare for next query
 
 
@@ -31,7 +36,8 @@ https://www.w3schools.com/xml/xpath_syntax.asp
 
 Selecting Nodes (all SUPPORTED)
 
-XPath uses path expressions to select nodes in an XML document. The node is selected by following a path or steps. The most useful path expressions are listed below:
+  XPath uses path expressions to select nodes in an XML document. The node is selected by following a path or steps. The most useful path expressions are listed below:
+  
   nodename 	Selects all nodes with the name "nodename"
   / 	Selects from the root node
   // 	Selects nodes in the document from the current node that match the selection no matter where they are
@@ -41,8 +47,9 @@ XPath uses path expressions to select nodes in an XML document. The node is sele
 
 Predicates (UNSUPPORTED)
 
-Predicates are used to find a specific node or a node that contains a specific value.
-Predicates are always embedded in square brackets.
+  Predicates are used to find a specific node or a node that contains a specific value.
+  Predicates are always embedded in square brackets.
+  
   /bookstore/book[1] 	Selects the first book element that is the child of the bookstore element.
   In JavaScript: xml.setProperty("SelectionLanguage","XPath");
   /bookstore/book[last()] 	Selects the last book element that is the child of the bookstore element
@@ -55,14 +62,16 @@ Predicates are always embedded in square brackets.
 
 Selecting Unknown Nodes (all SUPPORTED)
 
-XPath wildcards can be used to select unknown XML nodes.
+  XPath wildcards can be used to select unknown XML nodes.
+  
   * 	Matches any element node
   @* 	Matches any attribute node
   node() 	Matches any node of any kind
 
 Selecting Several Paths (UNSUPPORTED)
 
-By using the | operator in an XPath expression you can select several paths.
+  By using the | operator in an XPath expression you can select several paths.
+  
   //book/title | //book/price 	Selects all the title AND price elements of all book elements
   //title | //price 	Selects all the title AND price elements in the document
   /bookstore/book/title | //price 	Selects all the title elements of the book element of the bookstore element AND all the price elements in the document
@@ -73,7 +82,8 @@ https://www.w3schools.com/xml/xpath_axes.asp
 
 XPath Axes (UNSUPPORTED)
 
-An axis represents a relationship to the context (current) node, and is used to locate nodes relative to that node on the tree.
+  An axis represents a relationship to the context (current) node, and is used to locate nodes relative to that node on the tree.
+  
   ancestor 	Selects all ancestors (parent, grandparent, etc.) of the current node
   ancestor-or-self 	Selects all ancestors (parent, grandparent, etc.) of the current node and the current node itself
   attribute 	Selects all attributes of the current node
@@ -94,8 +104,9 @@ https://www.w3schools.com/xml/xpath_operators.asp
 
 XPath Operators (UNSUPPORTED)
 
-Below is a list of the operators that can be used in XPath expressions:
-| 	Computes two node-sets 	//book | //cd
+  Below is a list of the operators that can be used in XPath expressions:
+  
+  | 	Computes two node-sets 	//book | //cd
   + 	Addition 	6 + 4
   - 	Subtraction 	6 - 4
   * 	Multiplication 	6 * 4

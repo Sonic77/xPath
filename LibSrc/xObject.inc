@@ -7,6 +7,8 @@ _xObject_           EQUATE(1)
 
 xObjectMaxLevels    EQUATE(99) ! Maximum level over tags for recursive parsing
 
+xPathSeperator      EQUATE('/')
+
 xObjects            QUEUE()
 Obj                   &xObject
                     END
@@ -49,17 +51,23 @@ FindAttribute         PROCEDURE(<STRING pLabel>), LONG, VIRTUAL
 ! Properties
 FromString            PROCEDURE(STRING pxStr), VIRTUAL
 
-! Setters
+! Getters And Setters
 SetLevel              PROCEDURE(LONG pLevel), VIRTUAL
 SetTag                PROCEDURE(STRING pTag), VIRTUAL
+GetTag                PROCEDURE(), STRING, VIRTUAL
 SetAttributes         PROCEDURE(STRING pAttributes), VIRTUAL
 SetAttributeLabel     PROCEDURE(STRING pLabel), VIRTUAL
+GetAttributeLabel     PROCEDURE(LONG pIndex), STRING, VIRTUAL
 SetAttributeValue     PROCEDURE(STRING pValue), VIRTUAL
+GetAttributeValue     PROCEDURE(LONG pIndex), STRING, VIRTUAL
 SetContents           PROCEDURE(STRING pContents), VIRTUAL
+GetContents           PROCEDURE, STRING, VIRTUAL
 
-! Getters
+! Information
 ToStringChildren      PROCEDURE(), STRING, PRIVATE, VIRTUAL
-ToStringAttributes    PROCEDURE(), STRING, PRIVATE, VIRTUAL
+ToStringAttributes    PROCEDURE(LONG pIndex=0), STRING, PRIVATE, VIRTUAL
+ToStringContents      PROCEDURE(BYTE pRecursive=False), STRING, VIRTUAL
+ToStringPath          PROCEDURE(), STRING, VIRTUAL
 ToString              PROCEDURE(BYTE pRecursive=False), STRING, VIRTUAL
 IsMeta                PROCEDURE(), BYTE, VIRTUAL ! e.g. <!DOCTYPE html>
 IsComment             PROCEDURE(), BYTE, VIRTUAL ! e.g. <-- --/>
@@ -71,8 +79,6 @@ LengthTag             PROCEDURE(), LONG, VIRTUAL ! Length of tag string e.g. <p>
 CountAttributes       PROCEDURE(), LONG, VIRTUAL ! Number of attributes e.g. <p class="ClassAttribute"> -> 1
 LengthAttributes      PROCEDURE(), LONG, VIRTUAL ! Length of attributes string e.g. <p class="ClassAttribute"> -> 22
 LengthContents        PROCEDURE(), LONG, VIRTUAL ! Length of contents string e.g. <p>contents</p> -> 8
-GetAttributeLabel     PROCEDURE(LONG pIndex), STRING, VIRTUAL
-GetAttributeValue     PROCEDURE(LONG pIndex), STRING, VIRTUAL
 
 ! Helpers
 RemoveBlanks          PROCEDURE(STRING pStr), STRING, VIRTUAL

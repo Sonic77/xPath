@@ -36,22 +36,26 @@ I                     LONG
 ! Properties
   
 
+!!! Loads current object with data from supplied xml/html document and creates nested child tags for everything
 xPath.Load          PROCEDURE(STRING pxStr)!, STRING, VIRTUAL
   CODE
   SELF.xRoot &= NEW xObject()
   SELF.xRoot.FromString(pxStr)
 
-
+  
+!!! Clears the current result set
 xPath.Free         PROCEDURE()!, VIRTUAL
   CODE
   FREE(SELf.xResults)
 
 
+!!! Searches for results that can be found usign the specified query in the current results set and starting from the current root
 xPath.Search        PROCEDURE(STRING pxQuery)!, LONG, VIRTUAL
   CODE
   RETURN SELF.Search(SELF.xResults, SELF.xRoot, pxQuery)
 
 
+!!! Searches for results that can be found usign the specified query in the current results set and starting from the specified root
 xPath.Search        PROCEDURE(xObject pxRoot, STRING pxQuery)!, LONG, VIRTUAL
   CODE
   RETURN SELF.Search(SELF.xResults, pxRoot, pxQuery)
@@ -59,6 +63,8 @@ xPath.Search        PROCEDURE(xObject pxRoot, STRING pxQuery)!, LONG, VIRTUAL
   
 ! TODO Nesting with rest of search query, using results parameter to find commands. idea; xResultObjects.SearchLevel to seperate query level results
   
+
+!!! Searches for results that can be found usign the specified query in the specified results set and starting from the specified root, level is used in the recursive search call
 xPath.Search        PROCEDURE(xResultObjects pxResults, <xObject pxRoot>, STRING pxQuery, LONG pSearchLevel=0)!, LONG, VIRTUAL
 ! https://www.w3schools.com/xml/xpath_syntax.asp
 Obj                   &xObject
@@ -157,16 +163,19 @@ Count                 LONG
   RETURN Count
   
 
+!!! Finds a matching name in any node starting at the current root and adds it to the current result set, optionally specifying in which part of the node the name is matched
 xPath.FindAllNodes  PROCEDURE(STRING pNode, BYTE pPathSearch=xPathSearch:Element)!, LONG, VIRTUAL ! Searches all Nodes first to last
   CODE
   RETURN SELF.FindAllNodes(SELF.xResults, SELF.xRoot, pNode, pPathSearch)
 
 
+!!! Finds a matching name in any node starting at the specified root and adds it to the current result set, optionally specifying in which part of the node the name is matched
 xPath.FindAllNodes  PROCEDURE(xObject pxRoot, STRING pNode, BYTE pPathSearch=xPathSearch:Element)!, LONG, VIRTUAL ! Searches all Nodes first to last
   CODE
   RETURN SELF.FindAllNodes(SELF.xResults, pxRoot, pNode, pPathSearch)
 
   
+!!! Finds a matching name in any node starting at the specified root and adds it to the specified result set, optionally specifying in which part of the node the name is matched
 xPath.FindAllNodes  PROCEDURE(xResultObjects pxResults, <xObject pxRoot>, STRING pNode, BYTE pPathSearch=xPathSearch:Element)!, LONG, VIRTUAL ! Searches all Nodes first to last
 Obj                   &xObject
 I                     LONG
@@ -188,16 +197,19 @@ Count                 LONG
   RETURN Count
   
     
+!!! Finds a matching name in any (recursive) child node starting at the current root and adds it to the current result set, optionally specifying in which part of the node the name is matched
 xPath.FindAllChildNodes PROCEDURE(STRING pNode, BYTE pPathSearch=xPathSearch:Element, BYTE pRecursive=True)!, LONG, VIRTUAL ! Searches Node and child Nodes
   CODE
   RETURN SELF.FindAllChildNodes(SELF.xResults, SELF.xRoot, pNode, pPathSearch, pRecursive)
 
 
+!!! Finds a matching name in any (recursive) child node starting at the specified root and adds it to the current result set, optionally specifying in which part of the node the name is matched
 xPath.FindAllChildNodes PROCEDURE(xObject pxRoot, STRING pNode, BYTE pPathSearch=xPathSearch:Element, BYTE pRecursive=True)!, LONG, VIRTUAL ! Searches Node and child Nodes
   CODE
   RETURN SELF.FindAllChildNodes(SELF.xResults, pxRoot, pNode, pPathSearch, pRecursive)
   
   
+!!! Finds a matching name in any (recursive) child node starting at the specified root and adds it to the specified result set, optionally specifying in which part of the node the name is matched
 xPath.FindAllChildNodes PROCEDURE(xResultObjects pxResults, <xObject pxRoot>, STRING pNode, BYTE pPathSearch=xPathSearch:Element, BYTE pRecursive=True)!, LONG, VIRTUAL ! Searches Node and child Nodes
 Obj                   &xObject
 I                     LONG
@@ -226,11 +238,13 @@ Count                 LONG
   RETURN Count
 
   
+!!! Compares a node with a name and adds it to the current result set, optionally specifying in which part of the node the name is matched
 xPath.MatchNode     PROCEDURE(xObject pxObj, STRING pNode, BYTE pPathSearch=xPathSearch:Element)!, LONG, PRIVATE, VIRTUAL ! Searches Node
   CODE
   RETURN SELF.MatchNode(SELF.xResults, pxObj, pNode, pPathSearch)
   
   
+!!! Compares a node with a name and adds it to the specified result set, optionally specifying in which part of the node the name is matched
 xPath.MatchNode     PROCEDURE(xResultObjects pxResults, xObject pxObj, STRING pNode, BYTE pPathSearch=xPathSearch:Element)!, LONG, PRIVATE, VIRTUAL ! Searches Node
 I                     LONG
 Count                 LONG
@@ -277,11 +291,13 @@ Count                 LONG
   RETURN Count
   
   
+!!! Adds a node or attribute to the current result set
 xPath.AddNode       PROCEDURE(xObject pxObj, LONG pIndex)!, PRIVATE, VIRTUAL ! Adds a Node to search results
   CODE
   SELF.AddNode(SELF.xResults, pxObj, pIndex)
   
   
+!!! Adds a node or attribute to the supplied result set
 xPath.AddNode       PROCEDURE(xResultObjects pxResults, xObject pxObj, LONG pIndex)!, PRIVATE, VIRTUAL ! Adds a Node to search results
   CODE
   IF pxResults &= NULL THEN RETURN END
@@ -293,6 +309,7 @@ xPath.AddNode       PROCEDURE(xResultObjects pxResults, xObject pxObj, LONG pInd
   ADD(pxResults)
 
   
+!!! Returns all nodes in the reult set, tab seperated with path and value/contents
 xPath.ToString      PROCEDURE()!, STRING, VIRTUAL
 I                             LONG
 X                             gcCString
@@ -302,15 +319,18 @@ X                             gcCString
   X.Init(1024 * 1024)
   LOOP I = 1 TO RECORDS(SELF.xResults)
     GET(SELF.xResults, I)
+    X.Value = X.Value & SELF.xResults.Obj.ToStringPath()
     IF SELF.xResults.AttributeIndex = 0 THEN
-      X.Value = X.Value & SELF.xResults.Obj.Tag & '<9>' & SELF.xResults.Obj.Contents & '<13,10>'
+      X.Value = X.Value & xPathSeperator & SELF.xResults.Obj.GetTag() & '<9>' & SELF.xResults.Obj.GetContents() & '<13,10>'
     ELSE
-      X.Value = X.Value & SELF.xResults.Obj.GetAttributeLabel(SELF.xResults.AttributeIndex) & '<9>' & SELF.xResults.Obj.GetAttributeValue(SELF.xResults.AttributeIndex) & '<13,10>'
+      X.Value = X.Value & xPathSeperator & xPathAttribute & SELF.xResults.Obj.GetAttributeLabel(SELF.xResults.AttributeIndex) & '<9>' & | 
+                                                            SELF.xResults.Obj.GetAttributeValue(SELF.xResults.AttributeIndex) & '<13,10>'
     END
   END
   RETURN X.Value
 
-
+  
+!!! Returns all nodes in the reult set
 xPath.ToStringNodes PROCEDURE()!, STRING, VIRTUAL
 I                             LONG
 X                             gcCString
@@ -328,13 +348,15 @@ X                             gcCString
 ! Getters
 
   
+!!! Returns number of records in the result set, this can be used to loop with GetResult(x)
 xPath.Records       PROCEDURE()!, LONG, VIRTUAL
   CODE
   IF SELF.xResults &= NULL THEN RETURN 0 END
   RETURN RECORDS(SELF.xResults)
   
   
-xPath.Get           PROCEDURE(LONG pIndex)!, *xObject, VIRTUAL
+!!! Returns a single item in the result set
+xPath.GetResult     PROCEDURE(LONG pIndex)!, *xObject, VIRTUAL
   CODE
   IF SELF.xResults &= NULL THEN RETURN NULL END
   GET(SELF.xResults, pIndex)
@@ -345,6 +367,7 @@ xPath.Get           PROCEDURE(LONG pIndex)!, *xObject, VIRTUAL
 ! Debug
 
         
+!!! Debugging
 xPath.DebugOutput  PROCEDURE(STRING pMessage)!, VIRTUAL
 Msg CSTRING(1024)
   CODE
