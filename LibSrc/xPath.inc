@@ -26,6 +26,7 @@ SearchLevel           LONG
                     END
 
 
+xPathMultiple       EQUATE('|')  ! |  : By using the pipe operator in an XPath expression you can select several paths.
 xPathSeperator      EQUATE('/')
 xPathRoot           EQUATE('/')  ! /  : Selects from the root node
 xPathAnywhere       EQUATE('//') ! // : Selects nodes in the document from the current node that match the selection no matter where they are 

@@ -68,7 +68,7 @@ Selecting Unknown Nodes (all SUPPORTED)
   @* 	Matches any attribute node
   node() 	Matches any node of any kind
 
-Selecting Several Paths (UNSUPPORTED)
+Selecting Several Paths (all SUPPORTED)
 
   By using the | operator in an XPath expression you can select several paths.
   

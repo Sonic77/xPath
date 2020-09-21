@@ -61,9 +61,6 @@ xPath.Search        PROCEDURE(xObject pxRoot, STRING pxQuery)!, LONG, VIRTUAL
   RETURN SELF.Search(SELF.xResults, pxRoot, pxQuery)
   
   
-! TODO Nesting with rest of search query, using results parameter to find commands. idea; xResultObjects.SearchLevel to seperate query level results
-  
-
 !!! Searches for results that can be found usign the specified query in the specified results set and starting from the specified root, level is used in the recursive search call
 xPath.Search        PROCEDURE(xResultObjects pxResults, <xObject pxRoot>, STRING pxQuery, LONG pSearchLevel=0)!, LONG, VIRTUAL
 ! https://www.w3schools.com/xml/xpath_syntax.asp
@@ -81,10 +78,26 @@ Count                 LONG
     Obj &= pxRoot
   END
   IF Obj &= NULL THEN RETURN 0 END
-  SELF.DebugOutput(ALL(' ', pSearchLevel * 2) & 'Search Level=' & pSearchLevel & ' Begin: ' & pxQuery & ', Root=' & Obj.ToString())
+  SELF.DebugOutput(ALL(' ', pSearchLevel * 2) & 'Search Level=' & pSearchLevel & ' Begin: ''' & pxQuery & ''', Root=' & Obj.ToString())
 
+  ! Check if multiple search queries
+  PosBegin = INSTRING(xPathMultiple, pxQuery, -1, LEN(pxQuery))
+  IF PosBegin = 0 THEN
+    PosBegin = 1
+    LOOP WHILE PosBegin < LEN(pxQuery) AND pxQuery[PosBegin] = ' '  ! Skip spaces at beginning
+      PosBegin += 1
+    END
+  ELSE
+    !SELF.DebugOutput(ALL(' ', pSearchLevel * 2) & 'Search before multiple Level=' & pSearchLevel & ' Begin: ''' & SUB(pxQuery, 1, PosBegin - 1) & ''', Root=' & Obj.ToString())
+    SELF.Search(pxResults, Obj, SUB(pxQuery, 1, PosBegin - 1), pSearchLevel)
+    PosBegin += 1
+    LOOP WHILE PosBegin < LEN(pxQuery) AND pxQuery[PosBegin] = ' '  ! Skip spaces at beginning
+      PosBegin += 1
+    END
+    !SELF.DebugOutput(ALL(' ', pSearchLevel * 2) & 'Search after multiple Level=' & pSearchLevel & ' Begin: ''' & SUB(pxQuery, PosBegin, LEN(pxQuery) - PosBegin) & ''', Root=' & Obj.ToString())
+  END
+  
   ! Get fisrt part of search query
-  PosBegin = 1
   IF LEN(pxQuery) >= 1 AND pxQuery[PosBegin] = xPathSeperator THEN
     IF LEN(pxQuery) >= 2 AND pxQuery[PosBegin + 1] = xPathSeperator THEN
       PosEnd = INSTRING(xPathSeperator, pxQuery, 1, PosBegin + 2)
@@ -97,7 +110,7 @@ Count                 LONG
   ELSE
     PosEnd -= 1
   END
-  !SELF.DebugOutput(ALL(' ', pSearchLevel * 2) & 'Search Level=' & pSearchLevel & ' PosBegin=' & PosBegin & ', PosEnd=' & PosEnd & ', ' & SUB(pxQuery, PosBegin, PosEnd - PosBegin + 1))
+  !SELF.DebugOutput(ALL(' ', pSearchLevel * 2) & 'Search Level=' & pSearchLevel & ' PosBegin=' & PosBegin & ', PosEnd=' & PosEnd & ', ''' & SUB(pxQuery, PosBegin, PosEnd - PosBegin + 1) & '''')
 
   ! Execute first part of search query
   IF    SUB(pxQuery, PosBegin, 2) = xPathParent THEN   ! .. : Selects the parent of the current node
@@ -137,14 +150,14 @@ Count                 LONG
     PosBegin = PosEnd + 1
     Count = 0
     Results &= NEW xResultObjects
-    !SELF.DebugOutput(ALL(' ', pSearchLevel * 2) & 'Search Level=' & pSearchLevel & ' Next: ' & SUB(pxQuery, PosBegin, LEN(pxQuery) - PosEnd + 1))
+    !SELF.DebugOutput(ALL(' ', pSearchLevel * 2) & 'Search Level=' & pSearchLevel & ' Next: ''' & SUB(pxQuery, PosBegin, LEN(pxQuery) - PosEnd + 1) & '''')
     LOOP I = 1 TO RECORDS(pxResults)
       GET(pxResults, I)
       !SELF.DebugOutput(ALL(' ', pSearchLevel * 2) & 'Search Level=' & pSearchLevel & ' Next Level ' & pxResults.SearchLevel & ' ?= ' & pSearchLevel)
       IF pxResults.SearchLevel <> pSearchLevel THEN CYCLE END
-      !SELF.DebugOutput(ALL(' ', pSearchLevel * 2) & 'Search Level=' & pSearchLevel & ' Next: ' & SUB(pxQuery, PosBegin, LEN(pxQuery) - PosEnd + 1))
+      !SELF.DebugOutput(ALL(' ', pSearchLevel * 2) & 'Search Level=' & pSearchLevel & ' Next: ''' & SUB(pxQuery, PosBegin, LEN(pxQuery) - PosEnd + 1) & '''')
       Count += SELF.Search(Results, pxResults.Obj, SUB(pxQuery, PosBegin, LEN(pxQuery) - PosEnd + 1), pSearchLevel + 1)
-      SELF.DebugOutput(ALL(' ', pSearchLevel * 2) & 'Search Level=' & pSearchLevel & ' Returned: ' & SUB(pxQuery, PosBegin, LEN(pxQuery) - PosEnd + 1) & ', Records=' & RECORDS(Results) & ', Count=' & Count)
+      SELF.DebugOutput(ALL(' ', pSearchLevel * 2) & 'Search Level=' & pSearchLevel & ' Returned: ''' & SUB(pxQuery, PosBegin, LEN(pxQuery) - PosEnd + 1) & ''', Records=' & RECORDS(Results) & ', Count=' & Count)
     END ! LOOP
     !DISPOSE(SELF.xResults)
     !SELF.xResults &= Results
@@ -156,9 +169,9 @@ Count                 LONG
       ADD(pxResults)
     END
     DISPOSE(Results)
-    SELF.DebugOutput(ALL(' ', pSearchLevel * 2) & 'Search Level=' & pSearchLevel & ' Finished: ' & SUB(pxQuery, PosBegin, LEN(pxQuery) - PosEnd + 1) & ', Records=' & RECORDS(pxResults) & ', Count=' & Count)
+    SELF.DebugOutput(ALL(' ', pSearchLevel * 2) & 'Search Level=' & pSearchLevel & ' Finished: ''' & SUB(pxQuery, PosBegin, LEN(pxQuery) - PosEnd + 1) & ''', Records=' & RECORDS(pxResults) & ', Count=' & Count)
   END
-  !SELF.DebugOutput(ALL(' ', pSearchLevel * 2) & 'Search Level=' & pSearchLevel & ' End: ' & pxQuery & ', Count=' & Count)
+  SELF.DebugOutput(ALL(' ', pSearchLevel * 2) & 'Search Level=' & pSearchLevel & ' End: ''' & pxQuery & ''', Count=' & Count)
     
   RETURN Count
   
@@ -188,7 +201,7 @@ Count                 LONG
     Obj &= pxRoot
   END
   IF Obj &= NULL THEN RETURN 0 END
-  !SELF.DebugOutput('FindAllNodes Begin: ' & pNode & ' at ' & pPathSearch & ' in ' & Obj.ToString())
+  !SELF.DebugOutput('FindAllNodes Begin: ''' & pNode & ''' at ' & pPathSearch & ' in ' & Obj.ToString())
   LOOP
     Count += SELF.MatchNode(pxResults, Obj, pNode, pPathSearch)
     Obj &= Obj.xNext
@@ -222,7 +235,7 @@ Count                 LONG
     Obj &= pxRoot
   END
   IF Obj &= NULL THEN RETURN 0 END
-  !SELF.DebugOutput(ALL(' ', pRecursive * 2) & 'FindAllChildNodes Begin: ' & pNode & ' at ' & pPathSearch & ' in ' & Obj.ToString())
+  !SELF.DebugOutput(ALL(' ', pRecursive * 2) & 'FindAllChildNodes Begin: ''' & pNode & ''' at ' & pPathSearch & ' in ' & Obj.ToString())
   Count += SELF.MatchNode(pxResults, Obj, pNode, BAND(pPathSearch, xPathSearch:Attribute))
   !SELF.DebugOutput(ALL(' ', pRecursive * 2) & 'FindAllChildNodes Recursive=' & pRecursive & ', Childs=' & RECORDS(Obj.xChilderen))
   IF NOT Obj.xChilderen &= NULL AND RECORDS(Obj.xChilderen) > 0 THEN
@@ -319,7 +332,7 @@ X                             gcCString
   X.Init(1024 * 1024)
   LOOP I = 1 TO RECORDS(SELF.xResults)
     GET(SELF.xResults, I)
-    X.Value = X.Value & SELF.xResults.Obj.ToStringPath()
+    X.Value = X.Value & SELF.xResults.Obj.ToStringPath(xPathSeperator)
     IF SELF.xResults.AttributeIndex = 0 THEN
       X.Value = X.Value & xPathSeperator & SELF.xResults.Obj.GetTag() & '<9>' & SELF.xResults.Obj.GetContents() & '<13,10>'
     ELSE
