@@ -379,7 +379,7 @@ xObject.ToStringContents    PROCEDURE(BYTE pRecursive=False)!(BYTE pRecursive=Tr
 
   
 !!! Returns the full path to this tag
-xObject.ToStringPath  PROCEDURE()!, STRING, VIRTUAL
+xObject.ToStringPath  PROCEDURE(<STRING pSeperator>)!, STRING, VIRTUAL
 Obj                   &xObject
 X                     gcCString
   CODE
@@ -389,7 +389,11 @@ X                     gcCString
   LOOP
     IF Obj &= NULL THEN BREAK END
     IF LEN(X.Value) THEN
-      X.Value = xPathSeperator & X.Value
+      IF NOT OMITTED(pSeperator) THEN
+        X.Value = pSeperator & X.Value
+      ELSE
+        X.Value = xObjectSeperator & X.Value
+      END
     END
     X.Value = Obj.GetTag() & X.Value
     Obj &= Obj.xParent

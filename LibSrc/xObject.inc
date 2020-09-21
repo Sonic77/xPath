@@ -7,16 +7,18 @@ _xObject_           EQUATE(1)
 
 xObjectMaxLevels    EQUATE(99) ! Maximum level over tags for recursive parsing
 
-xPathSeperator      EQUATE('/')
-
 xObjects            QUEUE()
 Obj                   &xObject
                     END
+
 
 xAttributes         QUEUE()
 Label                 &CSTRING
 Value                 &CSTRING
                     END
+
+
+xObjectSeperator    EQUATE('/')
 
 
 xObject             CLASS, TYPE, MODULE('xObject.CLW'), LINK('xObject.CLW', _ABCLinkMode_), DLL(_ABCDLLMode_)
@@ -67,7 +69,7 @@ GetContents           PROCEDURE, STRING, VIRTUAL
 ToStringChildren      PROCEDURE(), STRING, PRIVATE, VIRTUAL
 ToStringAttributes    PROCEDURE(LONG pIndex=0), STRING, PRIVATE, VIRTUAL
 ToStringContents      PROCEDURE(BYTE pRecursive=False), STRING, VIRTUAL
-ToStringPath          PROCEDURE(), STRING, VIRTUAL
+ToStringPath          PROCEDURE(<STRING pSeperator>), STRING, VIRTUAL
 ToString              PROCEDURE(BYTE pRecursive=False), STRING, VIRTUAL
 IsMeta                PROCEDURE(), BYTE, VIRTUAL ! e.g. <!DOCTYPE html>
 IsComment             PROCEDURE(), BYTE, VIRTUAL ! e.g. <-- --/>
