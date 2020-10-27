@@ -11,7 +11,6 @@ xObjects            QUEUE()
 Obj                   &xObject
                     END
 
-
 xAttributes         QUEUE()
 Label                 &CSTRING
 Value                 &CSTRING

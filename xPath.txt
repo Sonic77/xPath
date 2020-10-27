@@ -45,14 +45,13 @@ Selecting Nodes (all SUPPORTED)
   .. 	Selects the parent of the current node
   @ 	Selects attributes
 
-Predicates (UNSUPPORTED)
+Predicates (partially SUPPORTED)
 
   Predicates are used to find a specific node or a node that contains a specific value.
   Predicates are always embedded in square brackets.
   
-  /bookstore/book[1] 	Selects the first book element that is the child of the bookstore element.
-  In JavaScript: xml.setProperty("SelectionLanguage","XPath");
-  /bookstore/book[last()] 	Selects the last book element that is the child of the bookstore element
+  /bookstore/book[1] 	Selects the first book element that is the child of the bookstore element. (SUPPORTED)
+  /bookstore/book[last()] 	Selects the last book element that is the child of the bookstore element (SUPPORTED)
   /bookstore/book[last()-1] 	Selects the last but one book element that is the child of the bookstore element
   /bookstore/book[position()<3] 	Selects the first two book elements that are children of the bookstore element
   //title[@lang] 	Selects all the title elements that have an attribute named lang
@@ -102,11 +101,11 @@ XPath Axes (UNSUPPORTED)
 https://www.w3schools.com/xml/xpath_operators.asp
 --------------------------------
 
-XPath Operators (UNSUPPORTED)
+XPath Operators (mostly UNSUPPORTED)
 
   Below is a list of the operators that can be used in XPath expressions:
   
-  | 	Computes two node-sets 	//book | //cd
+  | 	Computes two node-sets 	//book | //cd    (SUPPORTED)
   + 	Addition 	6 + 4
   - 	Subtraction 	6 - 4
   * 	Multiplication 	6 * 4

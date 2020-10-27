@@ -23,6 +23,8 @@ Unknown               EQUATE(-1)
 xResultObjects      QUEUE(xObjects)
 AttributeIndex        LONG
 SearchLevel           LONG
+Index                 LONG
+Count                 LONG
                     END
 
 
@@ -37,6 +39,10 @@ xPathWildcard       EQUATE('*')
 xPathAnyElement     EQUATE('*')  ! *  : Matches any element node
 xPathAnyAttribute   EQUATE('@*') ! @* : Matches any attribute node
 xPathAnyNode        EQUATE('node()') ! node() : Matches any node of any kind
+xPathPredicateBegin EQUATE('[')  ! [] : Predicates are used to find a specific node or a node that contains a specific value.
+xPathPredicateEnd   EQUATE(']')  ! [] : Predicates are used to find a specific node or a node that contains a specific value.
+xPathIndexLast      EQUATE('last()') ! last() : Matches only the last element index
+xPathIndexPosition  EQUATE('position()') ! position() : Is the current element position index
 
 
 xPath               CLASS, TYPE, MODULE('xPath.CLW'), LINK('xPath.CLW', _ABCLinkMode_), DLL(_ABCDLLMode_)
@@ -54,7 +60,8 @@ Load                  PROCEDURE(STRING pxStr), VIRTUAL
 Free                  PROCEDURE(), VIRTUAL
 Search                PROCEDURE(STRING pxQuery), LONG, VIRTUAL
 Search                PROCEDURE(xObject pxRoot, STRING pxQuery), LONG, VIRTUAL
-Search                PROCEDURE(xResultObjects pxResults, <xObject pxRoot>, STRING pxQuery, LONG pSearchLevel=0), LONG, VIRTUAL
+Search                PROCEDURE(xResultObjects pxResults, xObject pxRoot, STRING pxQuery), LONG, VIRTUAL
+Search                PROCEDURE(xResultObjects pxResults, xObject pxRoot, STRING pxQuery, LONG pSearchLevel, LONG pSearchIndex, LONG pSearchCount), LONG, PROTECTED, VIRTUAL
 FindAllNodes          PROCEDURE(STRING pNode, BYTE pPathSearch=xPathSearch:Node), LONG, VIRTUAL ! Searches all Nodes first to last
 FindAllNodes          PROCEDURE(xObject pxRoot, STRING pNode, BYTE pPathSearch=xPathSearch:Node), LONG, VIRTUAL ! Searches all Nodes first to last
 FindAllNodes          PROCEDURE(xResultObjects pxResults, <xObject pxRoot>, STRING pNode, BYTE pPathSearch=xPathSearch:Node), LONG, VIRTUAL ! Searches all Nodes first to last
